@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
     --jc-dark:#123A66;
@@ -209,6 +211,36 @@
   .field textarea{resize:vertical;min-height:90px;}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
+  /* LOCATION PICKER */
+  .location-row{display:flex;gap:10px;position:relative;}
+  .location-row input{flex:1;}
+  .locate-btn{
+    display:flex;align-items:center;gap:7px;white-space:nowrap;
+    padding:11px 16px;border-radius:10px;border:1.5px solid var(--jc-border);
+    background:#fff;font-size:13.5px;font-weight:600;color:var(--jc-dark);flex-shrink:0;
+  }
+  .locate-btn:hover{border-color:var(--jc-mid);color:var(--jc-mid);}
+  .locate-btn:disabled{opacity:0.55;cursor:not-allowed;}
+  .locate-btn svg{flex-shrink:0;}
+  .address-suggestions{
+    position:absolute;top:calc(100% + 4px);left:0;right:70px;z-index:20;
+    background:#fff;border:1.5px solid var(--jc-border);border-radius:10px;
+    box-shadow:var(--shadow);max-height:220px;overflow-y:auto;display:none;
+  }
+  .address-suggestions.visible{display:block;}
+  .address-suggestions .suggestion{
+    padding:10px 13px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--jc-border);
+  }
+  .address-suggestions .suggestion:last-child{border-bottom:none;}
+  .address-suggestions .suggestion:hover{background:var(--jc-mint-bg);}
+  .map-shell{
+    margin-top:14px;border-radius:12px;overflow:hidden;border:1.5px solid var(--jc-border);
+    position:relative;
+  }
+  #locationMap{width:100%;height:230px;background:var(--jc-mint-bg);}
+  .map-hint{font-size:12px;color:var(--jc-muted);margin-top:8px;}
+  .map-hint.error{color:#B3261E;}
+
   .checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;}
   .checkbox-item{
     display:flex;align-items:center;gap:10px;border:1.5px solid var(--jc-border);border-radius:10px;
@@ -323,7 +355,7 @@
     </nav>
     <a href="#request" class="btn btn-primary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg>
-      Request a Service
+      Request Service
     </a>
   </div>
 </header>
@@ -351,7 +383,7 @@
       </div>
       <a href="#request" class="btn btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg>
-        Request a Service
+        Request Service
       </a>
     </div>
     <div class="hero-media">
@@ -374,7 +406,7 @@
         <div class="icon-badge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1v-9"/></svg></div>
         <h3>Regular Home Cleaning</h3>
         <p>Keep your home fresh and spotless with our routine cleaning service.</p>
-        <div class="service-price">From AED 100</div> <!-- EDIT PRICE HERE -->
+        <div class="service-price"><b>From AED 40</b></div> <!-- EDIT PRICE HERE -->
       </div>
 
       <div class="service-card">
@@ -468,7 +500,7 @@
   <div class="wrap request-grid">
 
     <div class="form-card">
-      <h2>Request a Service</h2>
+      <h2>Request  Service</h2>
       <p class="sub">Fill in the details below and we'll get back to you on WhatsApp with more information.</p>
 
       <div class="progress" id="progress"></div>
@@ -509,6 +541,22 @@
           <div class="field">
             <label for="propSize">Approximate size (sq ft)</label>
             <input type="number" id="propSize" placeholder="e.g. 1200">
+          </div>
+
+          <div class="field">
+            <label for="propAddress">Service location</label>
+            <div class="location-row">
+              <input type="text" id="propAddress" placeholder="Start typing your address…" autocomplete="off">
+              <div class="address-suggestions" id="addressSuggestions"></div>
+              <button type="button" class="locate-btn" id="locateMeBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+                Use my location
+              </button>
+            </div>
+            <div class="map-shell">
+              <div id="locationMap"></div>
+            </div>
+            <p class="map-hint" id="mapHint">Type an address, tap "Use my location," or drag the pin to fine-tune it.</p>
           </div>
         </div>
 
@@ -587,7 +635,7 @@
           <p>We're here to make your home or office shine. Simply fill out the form and we'll contact you on WhatsApp with your personalized quote.</p>
           <a href="#request" class="btn btn-primary" style="width:100%;justify-content:center;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg>
-            Request a Service
+            Request Service
           </a>
           <div class="mini-stats">
             <div class="mini-stat">
@@ -666,7 +714,7 @@
      "Get a quote" instead of a number.
   ====================================================== */
   const SERVICES = [
-    { id:"regular",  name:"Regular Home Cleaning",       price:100, quote:false },
+    { id:"regular",  name:"Regular Home Cleaning",       price:40, quote:false },
     { id:"deep",     name:"Deep Cleaning",                price:150, quote:false },
     { id:"office",   name:"Office Cleaning",              price:120, quote:false },
     { id:"movein",   name:"Move-in / Move-out Cleaning",  price:180, quote:false },
@@ -676,6 +724,13 @@
   const SUPPLIES_SURCHARGE = 20; // AED added if user needs supplies provided — EDIT HERE
   const WHATSAPP_NUMBER = "971563200266"; // EDIT: Jetcom WhatsApp number, no + or spaces
 
+  /* ======================================================
+     LOCATION SETTINGS — free, no API key needed.
+     Map tiles: OpenStreetMap. Search & reverse-geocoding:
+     OSM's Nominatim service (also free, no key).
+  ====================================================== */
+  const DEFAULT_MAP_CENTER = { lat: 24.4539, lng: 54.3773 }; // Abu Dhabi — change to your base city
+
   const state = {
     step: 1,
     totalSteps: 6,
@@ -683,6 +738,9 @@
     propType: "Apartment",
     propRooms: "Studio",
     propSize: "",
+    address: "",
+    lat: null,
+    lng: null,
     supplies: null,
     focusAreas: [],
     notes: "",
@@ -757,6 +815,136 @@
   document.getElementById('propRooms').addEventListener('change', e => state.propRooms = e.target.value);
   document.getElementById('propSize').addEventListener('input', e => state.propSize = e.target.value);
   document.getElementById('notes').addEventListener('input', e => state.notes = e.target.value);
+
+  /* ======================================================
+     LOCATION PICKER: Leaflet map (OpenStreetMap tiles),
+     "Use my location" via browser Geolocation, and free
+     address search / reverse-geocoding via OSM Nominatim.
+  ====================================================== */
+  let jcMap, jcMarker;
+  const mapHintEl = document.getElementById('mapHint');
+  const addressInput = document.getElementById('propAddress');
+  const suggestionsEl = document.getElementById('addressSuggestions');
+
+  function initJetcomMap(){
+    jcMap = L.map('locationMap', { zoomControl: true }).setView(
+      [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], 11
+    );
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(jcMap);
+
+    jcMarker = L.marker([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], { draggable: true }).addTo(jcMap);
+
+    jcMarker.on('dragend', () => {
+      const pos = jcMarker.getLatLng();
+      setLocation(pos.lat, pos.lng, null);
+      mapHintEl.textContent = "Pin updated — this is what we'll send with your request.";
+      mapHintEl.classList.remove('error');
+    });
+
+    // Clicking the map also moves the pin
+    jcMap.on('click', (e) => {
+      jcMarker.setLatLng(e.latlng);
+      setLocation(e.latlng.lat, e.latlng.lng, null);
+      mapHintEl.textContent = "Pin updated — this is what we'll send with your request.";
+      mapHintEl.classList.remove('error');
+    });
+  }
+
+  function setLocation(lat, lng, address){
+    state.lat = lat;
+    state.lng = lng;
+    if (address) {
+      state.address = address;
+      addressInput.value = address;
+    } else {
+      // Reverse geocode via free Nominatim service
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.display_name) {
+            state.address = data.display_name;
+            addressInput.value = data.display_name;
+          }
+        })
+        .catch(() => { /* silent fail — coordinates are still captured */ });
+    }
+  }
+
+  /* Free address search-as-you-type (debounced) via Nominatim */
+  let searchTimer = null;
+  addressInput.addEventListener('input', () => {
+    state.address = addressInput.value;
+    clearTimeout(searchTimer);
+    const q = addressInput.value.trim();
+    if (q.length < 3) { suggestionsEl.classList.remove('visible'); return; }
+    searchTimer = setTimeout(() => {
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5`)
+        .then(r => r.json())
+        .then(results => {
+          suggestionsEl.innerHTML = '';
+          if (!results.length) { suggestionsEl.classList.remove('visible'); return; }
+          results.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'suggestion';
+            item.textContent = r.display_name;
+            item.addEventListener('click', () => {
+              const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
+              addressInput.value = r.display_name;
+              suggestionsEl.classList.remove('visible');
+              if (jcMap && jcMarker) {
+                jcMap.setView([lat, lng], 16);
+                jcMarker.setLatLng([lat, lng]);
+              }
+              setLocation(lat, lng, r.display_name);
+              mapHintEl.textContent = "Location set from your typed address.";
+              mapHintEl.classList.remove('error');
+            });
+            suggestionsEl.appendChild(item);
+          });
+          suggestionsEl.classList.add('visible');
+        })
+        .catch(() => { suggestionsEl.classList.remove('visible'); });
+    }, 450);
+  });
+  document.addEventListener('click', (e) => {
+    if (!suggestionsEl.contains(e.target) && e.target !== addressInput) {
+      suggestionsEl.classList.remove('visible');
+    }
+  });
+
+  document.getElementById('locateMeBtn').addEventListener('click', () => {
+    const btn = document.getElementById('locateMeBtn');
+    if (!navigator.geolocation) {
+      mapHintEl.textContent = "Geolocation isn't supported in this browser — type your address instead.";
+      mapHintEl.classList.add('error');
+      return;
+    }
+    btn.disabled = true;
+    mapHintEl.textContent = "Finding your location…";
+    mapHintEl.classList.remove('error');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude } = pos.coords;
+        if (jcMap && jcMarker) {
+          jcMap.setView([latitude, longitude], 16);
+          jcMarker.setLatLng([latitude, longitude]);
+        }
+        setLocation(latitude, longitude, null);
+        mapHintEl.textContent = "Location found — drag the pin to fine-tune it if needed.";
+        btn.disabled = false;
+      },
+      () => {
+        mapHintEl.textContent = "Couldn't get your location. You can type your address instead.";
+        mapHintEl.classList.add('error');
+        btn.disabled = false;
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+
   document.getElementById('prefDate').addEventListener('change', e => state.date = e.target.value);
   document.getElementById('prefTime').addEventListener('change', e => state.time = e.target.value);
 
@@ -778,6 +966,7 @@
     let rows = `
       <div class="estimate-row"><span>Service</span><span>${state.service.name}</span></div>
       <div class="estimate-row"><span>Property</span><span>${state.propType}${state.propRooms ? ' · ' + state.propRooms + (state.propRooms === '1' ? ' room' : ' rooms') : ''}</span></div>
+      <div class="estimate-row"><span>Location</span><span>${state.address || 'Not set'}</span></div>
       <div class="estimate-row"><span>Supplies</span><span>${state.supplies || '—'}</span></div>
       <div class="estimate-row"><span>Focus areas</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>
       <div class="estimate-row"><span>Date &amp; time</span><span>${state.date || '—'} · ${state.time}</span></div>
@@ -793,6 +982,8 @@
       `Hi Jetcom, I'd like to request a cleaning service:`,
       `- Service: ${state.service.name}`,
       `- Property: ${state.propType}, ${state.propRooms} room(s), ${state.propSize || 'size not specified'} sq ft`,
+      `- Location: ${state.address || 'not specified'}`,
+      (state.lat && state.lng) ? `- Map: https://www.openstreetmap.org/?mlat=${state.lat}&mlon=${state.lng}#map=17/${state.lat}/${state.lng}` : null,
       `- Supplies: ${state.supplies || 'not specified'}`,
       `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}`,
       state.notes ? `- Notes: ${state.notes}` : null,
@@ -804,6 +995,7 @@
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgLines)}`;
   }
 
+  let mapInitialized = false;
   function showStep(n){
     state.step = n;
     panels.forEach(p => p.classList.toggle('visible', Number(p.dataset.step) === n));
@@ -814,6 +1006,16 @@
     });
     backBtn.style.visibility = n === 1 ? 'hidden' : 'visible';
     nextBtn.style.display = n === state.totalSteps ? 'none' : 'inline-flex';
+    if (n === 2) {
+      // The map's container is hidden (display:none) until this step is
+      // shown, so Leaflet can't be initialized correctly before now.
+      if (!mapInitialized) {
+        initJetcomMap();
+        mapInitialized = true;
+      } else {
+        setTimeout(() => jcMap.invalidateSize(), 0);
+      }
+    }
     if (n === state.totalSteps) renderEstimate();
     validateStep();
     form.scrollIntoView({behavior:'smooth', block:'start'});
