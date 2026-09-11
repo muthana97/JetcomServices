@@ -497,7 +497,7 @@
       <div class="step-node">
         <div class="step-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg></div>
         <h4>6. Get Your Estimate &amp; Request</h4>
-        <p>We'll show you a price estimate and contact you on WhatsApp for confirmation.</p>
+        <p>We will contact you on WhatsApp for confirmation.</p>
       </div>
     </div>
   </div>
@@ -722,12 +722,12 @@
      "Get a quote" instead of a number.
   ====================================================== */
   const SERVICES = [
-    { id:"regular",  name:"Regular Home Cleaning",       price:40, quote:false },
-    { id:"deep",     name:"Deep Cleaning",                price:150, quote:false },
-    { id:"office",   name:"Office Cleaning",              price:120, quote:false },
-    { id:"movein",   name:"Move-in / Move-out Cleaning",  price:180, quote:false },
-    { id:"sofa",     name:"Sofa & Upholstery Cleaning",    price:180, quote:false },
-    { id:"other",    name:"Other / Custom Request",        price:0,   quote:true  },
+    { id:"regular-office", name:"Regular Home/Office Cleaning",                 price:40,  quote:false },
+    { id:"deep-movein",    name:"Deep Cleaning (Move in/out)",                  price:150, quote:false },
+    { id:"house-assistance", name:"House Assistance",                            price:0,   quote:true  },
+    { id:"maintenance",    name:"Maintenance & AC Repair/Clean (Handyman)",    price:0,   quote:true  },
+    { id:"sofa-upholstery", name:"Sofa & Upholstery Cleaning",                   price:180, quote:false },
+    { id:"other",          name:"Other / Custom Request",                       price:0,   quote:true  },
   ];
   const SUPPLIES_SURCHARGE = 20; // AED added if user needs supplies provided — EDIT HERE
   const WHATSAPP_NUMBER = "971563200266"; // EDIT: Jetcom WhatsApp number, no + or spaces
@@ -778,11 +778,11 @@
     const card = document.createElement('div');
     card.className = 'option-card';
     card.dataset.id = s.id;
-    card.innerHTML = `
+        card.innerHTML = `
       <span class="radio"></span>
       <span class="otext">
         <strong>${s.name}</strong>
-        <span>${s.quote ? 'Get a quote' : 'From AED ' + s.price}</span>
+        <span>${s.quote ? 'Request a quote' : 'Available to book'}</span>
       </span>`;
     card.addEventListener('click', () => {
       state.service = s;
@@ -1043,4 +1043,5 @@
 
 </body>
 </html>
+
 
