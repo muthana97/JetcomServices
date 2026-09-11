@@ -24,6 +24,7 @@
     --shadow:0 2px 10px rgba(18,58,102,0.06);
   }
   *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
   html{scroll-behavior:smooth;}
   body{
     margin:0;
@@ -169,7 +170,9 @@
 
   /* REQUEST FORM SECTION */
   .request-section{padding:96px 0;}
-  .request-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start;}
+  .request-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr);gap:24px;align-items:start;}
+  .validation-message{display:none;color:#B3261E;font-size:12.5px;font-weight:600;margin:-10px 0 16px;}
+  .validation-message.visible{display:block;}
   .form-card{
     background:#fff;border:1px solid var(--jc-border);border-radius:20px;padding:34px 36px;
   }
@@ -496,7 +499,7 @@
       <div class="step-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
       <div class="step-node">
         <div class="step-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg></div>
-        <h4>6. Get Your Estimate &amp; Request</h4>
+        <h4>6. Confirm Your Request</h4>
         <p>We will contact you on WhatsApp for confirmation.</p>
       </div>
     </div>
@@ -519,6 +522,7 @@
         <div class="step-panel visible" data-step="1">
           <h3>What do you need cleaned?</h3>
           <p class="hint">Select the type of service you're interested in.</p>
+          <div class="validation-message" id="serviceError" role="alert">Please select a service before continuing.</div>
           <div class="option-grid" id="serviceOptions"></div>
         </div>
 
@@ -526,6 +530,7 @@
         <div class="step-panel" data-step="2">
           <h3>Tell us about your property</h3>
           <p class="hint">This helps us prepare the right team and equipment.</p>
+          <div class="validation-message" id="propertyError" role="alert">Please enter your service location before continuing.</div>
           <div class="field-row">
             <div class="field">
               <label for="propType">Property type</label>
@@ -572,6 +577,7 @@
         <div class="step-panel" data-step="3">
           <h3>Do you need cleaning supplies?</h3>
           <p class="hint">Let us know if you'd like our team to bring equipment and products.</p>
+          <div class="validation-message" id="suppliesError" role="alert">Please choose whether our team should bring supplies.</div>
           <div class="toggle-row" id="suppliesToggle">
             <div class="toggle-card" data-value="Yes, bring supplies"><strong>Yes, bring supplies</strong></div>
             <div class="toggle-card" data-value="No, I have my own"><strong>No, I have my own</strong></div>
@@ -598,6 +604,7 @@
         <div class="step-panel" data-step="5">
           <h3>Pick a date &amp; time</h3>
           <p class="hint">Choose when you'd like the team to arrive.</p>
+          <div class="validation-message" id="dateError" role="alert">Please choose a preferred date before continuing.</div>
           <div class="field-row">
             <div class="field">
               <label for="prefDate">Preferred date</label>
@@ -614,10 +621,10 @@
           </div>
         </div>
 
-        <!-- STEP 6: ESTIMATE -->
+        <!-- STEP 6: CONFIRMATION -->
         <div class="step-panel" data-step="6">
-          <h3>Your estimate &amp; request</h3>
-          <p class="hint">Here's a summary based on what you've told us. Send it to us on WhatsApp to confirm.</p>
+          <h3>Confirm your request</h3>
+          <p class="hint">Review your details and send your request on WhatsApp. Our team will confirm the service details and disclose the applicable price directly with you.</p>
           <div class="estimate-box" id="estimateSummary"></div>
           <a href="#" id="whatsappBtn" class="btn btn-primary" target="_blank" rel="noopener" style="width:100%;justify-content:center;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg>
@@ -635,33 +642,14 @@
       </form>
     </div>
 
-    <div>
-      <div class="side-card">
-        <img src="https://images.unsplash.com/photo-1585421514738-01798e348b17?auto=format&fit=crop&w=800&q=80" alt="Cleaning supplies laid out on a counter">
-        <div class="side-card-body">
-          <h3>Ready for a cleaner space?</h3>
-          <p>We're here to make your home or office shine. Simply fill out the form and we'll contact you on WhatsApp with your personalized quote.</p>
-          <a href="#request" class="btn btn-primary" style="width:100%;justify-content:center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg>
-            Request Service
-          </a>
-          <div class="mini-stats">
-            <div class="mini-stat">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-              <span>Quick Response</span>
-            </div>
-            <div class="mini-stat">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
-              <span>Transparent Pricing</span>
-            </div>
-            <div class="mini-stat">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-              <span>No Obligation</span>
-            </div>
-          </div>
-        </div>
+    <aside class="side-card">
+      <img src="https://images.unsplash.com/photo-1585421514738-01798e348b17?auto=format&fit=crop&w=800&q=80" alt="Cleaning supplies and equipment">
+      <div class="side-card-body">
+        <h3>Need a little help?</h3>
+        <p>Tell us what you need and our team will help arrange the right service for your space.</p>
+        <a href="#request" class="btn btn-primary" style="width:100%;justify-content:center;">Request Service</a>
       </div>
-    </div>
+    </aside>
 
   </div>
 </section>
@@ -708,7 +696,6 @@
   };
 
   document.querySelector('.hero-media img').src = SITE_IMAGES.hero;
-  document.querySelector('.side-card img').src = SITE_IMAGES.supplies;
 
   document.querySelectorAll('.brand-mark').forEach(mark => {
     const logo = mark.querySelector('.brand-logo');
@@ -716,20 +703,18 @@
   });
 
   /* ======================================================
-     EDIT PRICES / SERVICES HERE
-     "price" is a number in AED used to calculate the live
-     estimate on the final step. "quote" services show
-     "Get a quote" instead of a number.
+     EDIT SERVICES HERE
+     Pricing is confirmed directly through WhatsApp after
+     reviewing the request details.
   ====================================================== */
   const SERVICES = [
-    { id:"regular-office", name:"Regular Home/Office Cleaning",                 price:40,  quote:false },
-    { id:"deep-movein",    name:"Deep Cleaning (Move in/out)",                  price:150, quote:false },
-    { id:"house-assistance", name:"House Assistance",                            price:0,   quote:true  },
-    { id:"maintenance",    name:"Maintenance & AC Repair/Clean (Handyman)",    price:0,   quote:true  },
-    { id:"sofa-upholstery", name:"Sofa & Upholstery Cleaning",                   price:180, quote:false },
-    { id:"other",          name:"Other / Custom Request",                       price:0,   quote:true  },
+    { id:"regular-office", name:"Regular Home/Office Cleaning" },
+    { id:"deep-movein", name:"Deep Cleaning (Move in/out)" },
+    { id:"house-assistance", name:"House Assistance" },
+    { id:"maintenance", name:"Maintenance & AC Repair/Clean (Handyman)" },
+    { id:"sofa-upholstery", name:"Sofa & Upholstery Cleaning" },
+    { id:"other", name:"Other / Custom Request" },
   ];
-  const SUPPLIES_SURCHARGE = 20; // AED added if user needs supplies provided — EDIT HERE
   const WHATSAPP_NUMBER = "971563200266"; // EDIT: Jetcom WhatsApp number, no + or spaces
 
   /* ======================================================
@@ -761,16 +746,28 @@
   const progressEl = document.getElementById('progress');
   const nextBtn = document.getElementById('nextBtn');
   const backBtn = document.getElementById('backBtn');
-  const stepLabels = ["Service","Property","Supplies","Special Requests","Date & Time","Estimate"];
+  const stepLabels = ["Service","Property","Supplies","Special Requests","Date & Time","Confirmation"];
 
   /* Build progress bar */
   stepLabels.forEach((label, i) => {
     const el = document.createElement('div');
     el.className = 'progress-step';
+    el.dataset.step = i + 1;
     el.innerHTML = `<div class="dot">${i+1}</div><div class="label">${label}</div>`;
     progressEl.appendChild(el);
   });
   const progressSteps = [...progressEl.children];
+
+  function renderProgress(){
+    const visibleSteps = progressSteps.filter(el => !el.hidden);
+    visibleSteps.forEach((el, index) => {
+      const stepNumber = Number(el.dataset.step);
+      const dot = el.querySelector('.dot');
+      el.classList.toggle('done', stepNumber < state.step);
+      el.classList.toggle('active', stepNumber === state.step);
+      dot.textContent = stepNumber < state.step ? '✓' : index + 1;
+    });
+  }
 
   /* Build service option cards */
   const serviceOptionsEl = document.getElementById('serviceOptions');
@@ -782,12 +779,14 @@
       <span class="radio"></span>
       <span class="otext">
         <strong>${s.name}</strong>
-        <span>${s.quote ? 'Request a quote' : 'Available to book'}</span>
+        <span>Details and pricing confirmed via WhatsApp</span>
       </span>`;
     card.addEventListener('click', () => {
       state.service = s;
+      updateSuppliesVisibility();
       [...serviceOptionsEl.children].forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+      document.getElementById('serviceError').classList.remove('visible');
       validateStep();
     });
     serviceOptionsEl.appendChild(card);
@@ -798,6 +797,7 @@
   [...suppliesToggle.children].forEach(card => {
     card.addEventListener('click', () => {
       state.supplies = card.dataset.value;
+      document.getElementById('suppliesError').classList.remove('visible');
       [...suppliesToggle.children].forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       validateStep();
@@ -885,6 +885,8 @@
   let searchTimer = null;
   addressInput.addEventListener('input', () => {
     state.address = addressInput.value;
+    const propertyError = document.getElementById('propertyError');
+    if (state.address.trim()) propertyError.classList.remove('visible');
     clearTimeout(searchTimer);
     const q = addressInput.value.trim();
     if (q.length < 3) { suggestionsEl.classList.remove('visible'); return; }
@@ -936,54 +938,95 @@
     navigator.geolocation.getCurrentPosition(
       pos => {
         const { latitude, longitude } = pos.coords;
+
         if (jcMap && jcMarker) {
           jcMap.setView([latitude, longitude], 16);
           jcMarker.setLatLng([latitude, longitude]);
         }
+
         setLocation(latitude, longitude, null);
-        mapHintEl.textContent = "Location found — drag the pin to fine-tune it if needed.";
+
+        mapHintEl.textContent =
+          "Location found — drag the pin to fine-tune it if needed.";
+        mapHintEl.classList.remove('error');
+
         btn.disabled = false;
       },
-      () => {
-        mapHintEl.textContent = "Couldn't get your location. You can type your address instead.";
+      error => {
+        console.log("Geolocation error:", error.code, error.message);
+
+        if (error.code === error.PERMISSION_DENIED) {
+          mapHintEl.textContent =
+            "Location permission was denied. Please allow location access for this website in Safari.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          mapHintEl.textContent =
+            "Your location is currently unavailable. Please try again or enter your address manually.";
+        } else if (error.code === error.TIMEOUT) {
+          mapHintEl.textContent =
+            "Location request timed out. Please try again.";
+        } else {
+          mapHintEl.textContent =
+            "We couldn't determine your location. Please enter your address manually.";
+        }
+
         mapHintEl.classList.add('error');
         btn.disabled = false;
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 60000
+      }
     );
   });
 
-  document.getElementById('prefDate').addEventListener('change', e => state.date = e.target.value);
+  document.getElementById('prefDate').addEventListener('change', e => {
+    state.date = e.target.value;
+    if (state.date) document.getElementById('dateError').classList.remove('visible');
+  });
   document.getElementById('prefTime').addEventListener('change', e => state.time = e.target.value);
 
-  function validateStep(){
+  const cleaningServiceIds = new Set(["regular-office", "deep-movein", "sofa-upholstery"]);
+  const validationMessages = {
+    1: document.getElementById('serviceError'),
+    2: document.getElementById('propertyError'),
+    3: document.getElementById('suppliesError'),
+    5: document.getElementById('dateError')
+  };
+
+  function updateSuppliesVisibility(){
+    const suppliesVisible = state.service && cleaningServiceIds.has(state.service.id);
+    const suppliesPanel = form.querySelector('[data-step="3"]');
+    suppliesPanel.hidden = !suppliesVisible;
+    progressSteps[2].hidden = !suppliesVisible;
+    if (!suppliesVisible) state.supplies = null;
+    renderProgress();
+  }
+
+  function validateStep(showMessage = false){
     let valid = true;
     if (state.step === 1) valid = !!state.service;
+    if (state.step === 2) valid = !!state.address.trim();
     if (state.step === 3) valid = !!state.supplies;
     if (state.step === 5) valid = !!state.date;
-    nextBtn.disabled = !valid;
+    const message = validationMessages[state.step];
+    if (message) message.classList.toggle('visible', showMessage && !valid);
+    // Keep the button clickable so the user receives useful feedback.
+    nextBtn.disabled = false;
     return valid;
   }
 
   function renderEstimate(){
     const box = document.getElementById('estimateSummary');
-    const base = state.service.quote ? null : state.service.price;
-    const supSurcharge = state.supplies === "Yes, bring supplies" ? SUPPLIES_SURCHARGE : 0;
-    const total = base === null ? null : base + supSurcharge;
-
-    let rows = `
+    const rows = `
       <div class="estimate-row"><span>Service</span><span>${state.service.name}</span></div>
       <div class="estimate-row"><span>Property</span><span>${state.propType}${state.propRooms ? ' · ' + state.propRooms + (state.propRooms === '1' ? ' room' : ' rooms') : ''}</span></div>
       <div class="estimate-row"><span>Location</span><span>${state.address || 'Not set'}</span></div>
       <div class="estimate-row"><span>Supplies</span><span>${state.supplies || '—'}</span></div>
       <div class="estimate-row"><span>Focus areas</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>
       <div class="estimate-row"><span>Date &amp; time</span><span>${state.date || '—'} · ${state.time}</span></div>
+      <div class="estimate-row total"><span>Confirmation</span><span>Service details and pricing will be disclosed upon confirmation via WhatsApp</span></div>
     `;
-    if (total === null) {
-      rows += `<div class="estimate-row total"><span>Estimate</span><span>We'll send you a custom quote</span></div>`;
-    } else {
-      rows += `<div class="estimate-row total"><span>Estimated total</span><span>From AED ${total}</span></div>`;
-    }
     box.innerHTML = rows;
 
     const msgLines = [
@@ -996,7 +1039,7 @@
       `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}`,
       state.notes ? `- Notes: ${state.notes}` : null,
       `- Preferred date/time: ${state.date || 'not specified'}, ${state.time}`,
-      total !== null ? `- Estimated total: AED ${total}` : `- Requesting a custom quote`,
+      `- Service details and pricing: To be disclosed upon confirmation via WhatsApp`,
     ].filter(Boolean).join('\n');
 
     document.getElementById('whatsappBtn').href =
@@ -1007,11 +1050,7 @@
   function showStep(n){
     state.step = n;
     panels.forEach(p => p.classList.toggle('visible', Number(p.dataset.step) === n));
-    progressSteps.forEach((el, i) => {
-      el.classList.toggle('done', i + 1 < n);
-      el.classList.toggle('active', i + 1 === n);
-      el.querySelector('.dot').textContent = (i + 1 < n) ? '✓' : (i + 1);
-    });
+    renderProgress();
     backBtn.style.visibility = n === 1 ? 'hidden' : 'visible';
     nextBtn.style.display = n === state.totalSteps ? 'none' : 'inline-flex';
     if (n === 2) {
@@ -1030,18 +1069,28 @@
   }
 
   nextBtn.addEventListener('click', () => {
-    if (!validateStep()) return;
-    if (state.step < state.totalSteps) showStep(state.step + 1);
+    if (!validateStep(true)) return;
+    if (state.step < state.totalSteps) {
+      let nextStep = state.step + 1;
+      if (nextStep === 3 && !(state.service && cleaningServiceIds.has(state.service.id))) nextStep = 4;
+      showStep(nextStep);
+    }
   });
   backBtn.addEventListener('click', () => {
-    if (state.step > 1) showStep(state.step - 1);
+    if (state.step > 1) {
+      let previousStep = state.step - 1;
+      if (previousStep === 3 && !(state.service && cleaningServiceIds.has(state.service.id))) previousStep = 2;
+      showStep(previousStep);
+    }
   });
 
+  updateSuppliesVisibility();
   showStep(1);
 })();
 </script>
 
 </body>
 </html>
+
 
 
