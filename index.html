@@ -591,15 +591,15 @@
             <p class="hint" id="nonCleaningHint">Add any details that will help us prepare for your request.</p>
             <div class="validation-message" id="maintenanceError" role="alert">Please choose a maintenance service.</div>
             <div class="option-grid" id="maintenanceOptions" hidden>
-              <div class="option-card" data-value="Appliance Maintenance">
-                <span class="radio"></span><span class="otext"><strong>Appliance Maintenance</strong><span>Please provide details in the box below.</span></span>
+              <div class="option-card" data-value="General/Appliance Maintenance">
+                <span class="radio"></span><span class="otext"><strong>General/Appliance Maintenance</strong><span>Please provide details in the box below.</span></span>
               </div>
               <div class="option-card" data-value="AC Repair"><span class="radio"></span><span class="otext"><strong>AC Repair</strong></span></div>
               <div class="option-card" data-value="AC Cleaning"><span class="radio"></span><span class="otext"><strong>AC Cleaning</strong></span></div>
               <div class="option-card" data-value="Handyman service"><span class="radio"></span><span class="otext"><strong>Handyman service</strong></span></div>
             </div>
             <div class="field" style="margin-top:16px;">
-              <label for="notes">Additional notes (optional)</label>
+              <label for="notes" id="notesLabel">Additional notes (optional)</label>
               <textarea id="notes" placeholder="Please share any specific details or instructions."></textarea>
             </div>
           </div>
@@ -1055,6 +1055,12 @@
     document.getElementById('nonCleaningHint').textContent = isMaintenanceService()
       ? 'Choose a service and add any useful details below.'
       : 'Add any details that will help us prepare for your request.';
+    document.getElementById('notesLabel').textContent = isMaintenanceService()
+      ? 'Any other services we can provide? (optional)'
+      : 'Additional notes (optional)';
+    document.getElementById('notes').placeholder = isMaintenanceService()
+      ? 'Please tell us about any other service you may need.'
+      : 'Please share any specific details or instructions.';
 
     suppliesPanel.hidden = false;
     progressSteps[2].hidden = false;
@@ -1087,7 +1093,7 @@
       <div class="estimate-row"><span>Property</span><span>${state.propType}${state.propRooms ? ' · ' + state.propRooms + (state.propRooms === '1' ? ' room' : ' rooms') : ''}</span></div>
       <div class="estimate-row"><span>Location</span><span>${state.address || 'Not set'}</span></div>
       <div class="estimate-row"><span>${isMaintenanceService() ? 'Maintenance service' : 'Supplies'}</span><span>${isMaintenanceService() ? (state.maintenanceService || '—') : (state.supplies || '—')}</span></div>
-      <div class="estimate-row"><span>Focus areas</span><span>${isCleaningService() && state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>
+      ${isCleaningService() ? `<div class="estimate-row"><span>Focus areas</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>` : ''}
       <div class="estimate-row"><span>Notes</span><span>${state.notes || state.cleaningNotes || 'None specified'}</span></div>
       <div class="estimate-row"><span>Date &amp; time</span><span>${state.date || '—'} · ${state.time}</span></div>
       <div class="estimate-row total"><span>Confirmation</span><span>Service details and pricing will be disclosed upon confirmation via WhatsApp</span></div>
@@ -1101,7 +1107,7 @@
       `- Location: ${state.address || 'not specified'}`,
       (state.lat && state.lng) ? `- Map: https://www.openstreetmap.org/?mlat=${state.lat}&mlon=${state.lng}#map=17/${state.lat}/${state.lng}` : null,
       isMaintenanceService() ? `- Maintenance service: ${state.maintenanceService || 'not specified'}` : `- Supplies: ${state.supplies || 'not specified'}`,
-      `- Focus areas: ${isCleaningService() && state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}`,
+      isCleaningService() ? `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}` : null,
       state.notes ? `- Notes: ${state.notes}` : null,
       state.cleaningNotes ? `- Cleaning notes: ${state.cleaningNotes}` : null,
       `- Preferred date/time: ${state.date || 'not specified'}, ${state.time}`,
@@ -1157,6 +1163,7 @@
 
 </body>
 </html>
+
 
 
 
