@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; window.scrollTo(0, 0);</script>
 <title>Jetcom — Clean Spaces. Better Days.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -215,6 +216,7 @@
   .option-card.selected .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--jc-mid);}
   .option-card .otext strong{display:block;font-size:13.5px;font-weight:700;margin-bottom:2px;}
   .option-card .otext span{font-size:12px;color:var(--jc-muted);}
+  .service-selection-note{font-size:12.5px;color:var(--jc-muted);text-align:center;margin:16px 0 0;font-weight:600;}
 
   .field{margin-bottom:18px;}
   .field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;}
@@ -525,6 +527,7 @@
           <p class="hint">Select the type of service you're interested in.</p>
           <div class="validation-message" id="serviceError" role="alert">Please select a service before continuing.</div>
           <div class="option-grid" id="serviceOptions"></div>
+          <p class="service-selection-note">Tell us what you need and we'll confirm the details with you on WhatsApp.</p>
         </div>
 
         <!-- STEP 2: PROPERTY -->
@@ -589,7 +592,7 @@
           <div id="nonCleaningDetails" hidden>
             <h3 id="nonCleaningTitle">Tell us more about the service</h3>
             <p class="hint" id="nonCleaningHint">Add any details that will help us prepare for your request.</p>
-            <div class="validation-message" id="maintenanceError" role="alert">Please choose a maintenance service.</div>
+            <div class="validation-message" id="maintenanceError" role="alert">Please choose a service option before continuing.</div>
             <div class="option-grid" id="maintenanceOptions" hidden>
               <div class="option-card" data-value="General/Appliance Maintenance">
                 <span class="radio"></span><span class="otext"><strong>General/Appliance Maintenance</strong><span>Please provide details in the box below.</span></span>
@@ -597,6 +600,12 @@
               <div class="option-card" data-value="AC Repair"><span class="radio"></span><span class="otext"><strong>AC Repair</strong></span></div>
               <div class="option-card" data-value="AC Cleaning"><span class="radio"></span><span class="otext"><strong>AC Cleaning</strong></span></div>
               <div class="option-card" data-value="Handyman service"><span class="radio"></span><span class="otext"><strong>Handyman service</strong></span></div>
+            </div>
+            <div class="option-grid" id="houseAssistanceOptions" hidden>
+              <div class="option-card" data-value="Nanny"><span class="radio"></span><span class="otext"><strong>Nanny</strong></span></div>
+              <div class="option-card" data-value="Cook"><span class="radio"></span><span class="otext"><strong>Cook</strong></span></div>
+              <div class="option-card" data-value="Monthly house assistance"><span class="radio"></span><span class="otext"><strong>Monthly house assistance</strong></span></div>
+              <div class="option-card" data-value="Other"><span class="radio"></span><span class="otext"><strong>Other</strong></span></div>
             </div>
             <div class="field" style="margin-top:16px;">
               <label for="notes" id="notesLabel">Additional notes (optional)</label>
@@ -757,6 +766,7 @@
     lng: null,
     supplies: null,
     maintenanceService: null,
+    houseAssistanceService: null,
     focusAreas: [],
     notes: "",
     cleaningNotes: "",
@@ -802,7 +812,7 @@
       <span class="radio"></span>
       <span class="otext">
         <strong>${s.name}</strong>
-        <span>${s.price || "Tell us what you need and we'll confirm the details with you on WhatsApp."}</span>
+        <span>${s.price || "Service details confirmed via WhatsApp."}</span>
       </span>`;
     card.addEventListener('click', () => {
       state.service = s;
@@ -827,13 +837,23 @@
     });
   });
 
-  /* Maintenance service options */
+  /* Service-specific options */
   const maintenanceOptionsEl = document.getElementById('maintenanceOptions');
   [...maintenanceOptionsEl.children].forEach(card => {
     card.addEventListener('click', () => {
       state.maintenanceService = card.dataset.value;
       document.getElementById('maintenanceError').classList.remove('visible');
       [...maintenanceOptionsEl.children].forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      validateStep();
+    });
+  });
+
+  const houseAssistanceOptionsEl = document.getElementById('houseAssistanceOptions');
+  [...houseAssistanceOptionsEl.children].forEach(card => {
+    card.addEventListener('click', () => {
+      state.houseAssistanceService = card.dataset.value;
+      [...houseAssistanceOptionsEl.children].forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       validateStep();
     });
@@ -1023,7 +1043,8 @@
   document.getElementById('prefTime').addEventListener('change', e => state.time = e.target.value);
 
   const cleaningServiceIds = new Set(["regular-office", "deep-movein", "sofa-upholstery"]);
-  const maintenanceServiceId = "maintenance";
+      const maintenanceServiceId = "maintenance";
+    const houseAssistanceServiceId = "house-assistance";
   const validationMessages = {
     1: document.getElementById('serviceError'),
     2: document.getElementById('propertyError'),
@@ -1039,16 +1060,23 @@
     return state.service && state.service.id === maintenanceServiceId;
   }
 
+  function isHouseAssistanceService(){
+    return state.service && state.service.id === houseAssistanceServiceId;
+  }
+
   function updateSuppliesVisibility(){
     const suppliesVisible = isCleaningService();
     const suppliesDetails = document.getElementById('suppliesDetails');
     const nonCleaningDetails = document.getElementById('nonCleaningDetails');
     const maintenanceOptions = document.getElementById('maintenanceOptions');
+    const houseAssistanceOptions = document.getElementById('houseAssistanceOptions');
     const suppliesPanel = form.querySelector('[data-step="3"]');
+    const isHouseAssistance = state.service && state.service.id === 'house-assistance';
 
     suppliesDetails.hidden = !suppliesVisible;
     nonCleaningDetails.hidden = suppliesVisible;
     maintenanceOptions.hidden = !isMaintenanceService();
+    houseAssistanceOptions.hidden = !isHouseAssistance;
     document.getElementById('nonCleaningTitle').textContent = isMaintenanceService()
       ? 'What maintenance service do you need?'
       : 'Tell us more about the service';
@@ -1067,6 +1095,7 @@
     progressSteps[3].hidden = !suppliesVisible;
     if (!suppliesVisible) state.supplies = null;
     if (!isMaintenanceService()) state.maintenanceService = null;
+    if (!isHouseAssistanceService()) state.houseAssistanceService = null;
     renderProgress();
   }
 
@@ -1074,10 +1103,18 @@
     let valid = true;
     if (state.step === 1) valid = !!state.service;
     if (state.step === 2) valid = !!state.address.trim();
-    if (state.step === 3) valid = isCleaningService() ? !!state.supplies : (!isMaintenanceService() || !!state.maintenanceService);
+    if (state.step === 3) {
+      valid = isCleaningService()
+        ? !!state.supplies
+        : isMaintenanceService()
+          ? !!state.maintenanceService
+          : isHouseAssistanceService()
+            ? !!state.houseAssistanceService
+            : true;
+    }
     if (state.step === 4 && !isCleaningService()) valid = true;
     if (state.step === 5) valid = !!state.date;
-    const message = state.step === 3 && isMaintenanceService()
+    const message = state.step === 3 && (isMaintenanceService() || isHouseAssistanceService())
       ? document.getElementById('maintenanceError')
       : validationMessages[state.step];
     if (message) message.classList.toggle('visible', showMessage && !valid);
@@ -1092,7 +1129,7 @@
       <div class="estimate-row"><span>Service</span><span>${state.service.name}</span></div>
       <div class="estimate-row"><span>Property</span><span>${state.propType}${state.propRooms ? ' · ' + state.propRooms + (state.propRooms === '1' ? ' room' : ' rooms') : ''}</span></div>
       <div class="estimate-row"><span>Location</span><span>${state.address || 'Not set'}</span></div>
-      <div class="estimate-row"><span>${isMaintenanceService() ? 'Maintenance service' : 'Supplies'}</span><span>${isMaintenanceService() ? (state.maintenanceService || '—') : (state.supplies || '—')}</span></div>
+      <div class="estimate-row"><span>${isMaintenanceService() ? 'Maintenance service' : isHouseAssistanceService() ? 'House assistance' : 'Supplies'}</span><span>${isMaintenanceService() ? (state.maintenanceService || '—') : isHouseAssistanceService() ? (state.houseAssistanceService || '—') : (state.supplies || '—')}</span></div>
       ${isCleaningService() ? `<div class="estimate-row"><span>Focus areas</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>` : ''}
       <div class="estimate-row"><span>Notes</span><span>${state.notes || state.cleaningNotes || 'None specified'}</span></div>
       <div class="estimate-row"><span>Date &amp; time</span><span>${state.date || '—'} · ${state.time}</span></div>
@@ -1106,7 +1143,7 @@
       `- Property: ${state.propType}, ${state.propRooms} room(s), ${state.propSize || 'size not specified'} sq ft`,
       `- Location: ${state.address || 'not specified'}`,
       (state.lat && state.lng) ? `- Map: https://www.openstreetmap.org/?mlat=${state.lat}&mlon=${state.lng}#map=17/${state.lat}/${state.lng}` : null,
-      isMaintenanceService() ? `- Maintenance service: ${state.maintenanceService || 'not specified'}` : `- Supplies: ${state.supplies || 'not specified'}`,
+      isMaintenanceService() ? `- Maintenance service: ${state.maintenanceService || 'not specified'}` : isHouseAssistanceService() ? `- House assistance: ${state.houseAssistanceService || 'not specified'}` : `- Supplies: ${state.supplies || 'not specified'}`, 
       isCleaningService() ? `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}` : null,
       state.notes ? `- Notes: ${state.notes}` : null,
       state.cleaningNotes ? `- Cleaning notes: ${state.cleaningNotes}` : null,
@@ -1119,7 +1156,7 @@
   }
 
   let mapInitialized = false;
-  function showStep(n){
+  function showStep(n, shouldScroll = true){
     state.step = n;
     panels.forEach(p => p.classList.toggle('visible', Number(p.dataset.step) === n));
     renderProgress();
@@ -1137,7 +1174,7 @@
     }
     if (n === state.totalSteps) renderEstimate();
     validateStep();
-    form.scrollIntoView({behavior:'smooth', block:'start'});
+    if (shouldScroll) form.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   nextBtn.addEventListener('click', () => {
@@ -1157,16 +1194,10 @@
   });
 
   updateSuppliesVisibility();
-  showStep(1);
+  showStep(1, false);
+  window.scrollTo(0, 0);
 })();
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
