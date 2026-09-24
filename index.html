@@ -619,6 +619,12 @@
             <div class="checkbox-item" data-value="Windows"><span class="box"></span>Windows</div>
             <div class="checkbox-item" data-value="Balcony"><span class="box"></span>Balcony</div>
           </div>
+          <div class="checkbox-grid" id="sofaServices" hidden>
+            <div class="checkbox-item" data-value="Sofa cleaning"><span class="box"></span>Sofa cleaning</div>
+            <div class="checkbox-item" data-value="Sofa nano coating"><span class="box"></span>Sofa nano coating</div>
+            <div class="checkbox-item" data-value="Carpet cleaning"><span class="box"></span>Carpet cleaning</div>
+            <div class="checkbox-item" data-value="Other service"><span class="box"></span>Other service</div>
+          </div>
           <div class="field" style="margin-top:16px;">
             <label for="cleaningNotes">Additional notes (optional)</label>
             <textarea id="cleaningNotes" placeholder="Anything else we should know?"></textarea>
@@ -700,7 +706,7 @@
     <div class="footer-social">
       <a href="https://www.instagram.com/jetclean.ae/" aria-label="Instagram" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
       <a href="https://www.facebook.com/jetclean.ae/" aria-label="Facebook" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 3h-2a4 4 0 0 0-4 4v3H6v4h3v7h4v-7h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-      <a href="#" aria-label="WhatsApp"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg></a>
+      <a href="https://wa.me/971563200266" aria-label="WhatsApp" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.38a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2z"/></svg></a>
     </div>
   </div>
   <div class="footer-bottom">© 2026 Jetcom. All rights reserved.</div>
@@ -850,7 +856,8 @@
 
   /* Focus area checkboxes */
   const focusAreasEl = document.getElementById('focusAreas');
-  [...focusAreasEl.children].forEach(item => {
+  const sofaServicesEl = document.getElementById('sofaServices');
+  [...focusAreasEl.children, ...sofaServicesEl.children].forEach(item => {
     item.addEventListener('click', () => {
       const v = item.dataset.value;
       item.classList.toggle('checked');
@@ -1054,12 +1061,15 @@
   }
 
   function updateSuppliesVisibility(){
-    const suppliesVisible = isCleaningService();
+    const suppliesVisible = isCleaningService() && state.service.id !== 'sofa-upholstery';
     const suppliesDetails = document.getElementById('suppliesDetails');
     const nonCleaningDetails = document.getElementById('nonCleaningDetails');
     const maintenanceOptions = document.getElementById('maintenanceOptions');
     const houseAssistanceOptions = document.getElementById('houseAssistanceOptions');
     const suppliesPanel = form.querySelector('[data-step="3"]');
+    const focusPanel = form.querySelector('[data-step="4"]');
+    const sofaServices = document.getElementById('sofaServices');
+    const isSofaService = state.service && state.service.id === 'sofa-upholstery';
     const isHouseAssistance = state.service && state.service.id === 'house-assistance';
 
     suppliesDetails.hidden = !suppliesVisible;
@@ -1079,9 +1089,24 @@
       ? 'Please tell us about any other service you may need.'
       : 'Please share any specific details or instructions.';
 
-    suppliesPanel.hidden = false;
-    progressSteps[2].hidden = false;
-    progressSteps[3].hidden = !suppliesVisible;
+    suppliesPanel.hidden = isSofaService;
+    focusPanel.querySelector('h3').textContent = isSofaService
+      ? 'What service do you need?'
+      : 'Add special requests';
+    focusPanel.querySelector('.hint').textContent = isSofaService
+      ? 'Select the sofa or carpet service you need.'
+      : 'Select any areas that need extra attention, or add a note.';
+    const sofaServiceValues = new Set(['Sofa cleaning', 'Sofa nano coating', 'Carpet cleaning', 'Other service']);
+    state.focusAreas = state.focusAreas.filter(value => isSofaService
+      ? sofaServiceValues.has(value)
+      : !sofaServiceValues.has(value));
+    [...focusAreasEl.children, ...sofaServices.children].forEach(item => {
+      item.classList.toggle('checked', state.focusAreas.includes(item.dataset.value));
+    });
+    focusAreasEl.hidden = isSofaService;
+    sofaServices.hidden = !isSofaService;
+    progressSteps[2].hidden = isSofaService;
+    progressSteps[3].hidden = false;
     if (!suppliesVisible) state.supplies = null;
     if (!isMaintenanceService()) state.maintenanceService = null;
     if (!isHouseAssistanceService()) state.houseAssistanceService = null;
@@ -1093,13 +1118,15 @@
     if (state.step === 1) valid = !!state.service;
     if (state.step === 2) valid = !!state.address.trim();
     if (state.step === 3) {
-      valid = isCleaningService()
-        ? !!state.supplies
-        : isMaintenanceService()
-          ? !!state.maintenanceService
-          : isHouseAssistanceService()
-            ? !!state.houseAssistanceService
-            : true;
+      valid = state.service && state.service.id === 'sofa-upholstery'
+        ? true
+        : isCleaningService()
+          ? !!state.supplies
+          : isMaintenanceService()
+            ? !!state.maintenanceService
+            : isHouseAssistanceService()
+              ? !!state.houseAssistanceService
+              : true;
     }
     if (state.step === 4 && !isCleaningService()) valid = true;
     if (state.step === 5) valid = !!state.date;
@@ -1118,8 +1145,8 @@
       <div class="estimate-row"><span>Service</span><span>${state.service.name}</span></div>
       <div class="estimate-row"><span>Property</span><span>${state.propType}${state.propRooms ? ' · ' + state.propRooms + (state.propRooms === '1' ? ' room' : ' rooms') : ''}</span></div>
       <div class="estimate-row"><span>Location</span><span>${state.address || 'Not set'}</span></div>
-      <div class="estimate-row"><span>${isMaintenanceService() ? 'Maintenance service' : isHouseAssistanceService() ? 'House assistance' : 'Supplies'}</span><span>${isMaintenanceService() ? (state.maintenanceService || '—') : isHouseAssistanceService() ? (state.houseAssistanceService || '—') : (state.supplies || '—')}</span></div>
-      ${isCleaningService() ? `<div class="estimate-row"><span>Focus areas</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>` : ''}
+      <div class="estimate-row"><span>${isMaintenanceService() ? 'Maintenance service' : isHouseAssistanceService() ? 'House assistance' : state.service.id === 'sofa-upholstery' ? 'Requested services' : 'Supplies'}</span><span>${isMaintenanceService() ? (state.maintenanceService || '—') : isHouseAssistanceService() ? (state.houseAssistanceService || '—') : state.service.id === 'sofa-upholstery' ? (state.focusAreas.length ? state.focusAreas.join(', ') : '—') : (state.supplies || '—')}</span></div>
+      ${isCleaningService() ? `<div class="estimate-row"><span>${state.service.id === 'sofa-upholstery' ? 'Requested services' : 'Focus areas'}</span><span>${state.focusAreas.length ? state.focusAreas.join(', ') : 'None specified'}</span></div>` : ''}
       <div class="estimate-row"><span>Notes</span><span>${state.notes || state.cleaningNotes || 'None specified'}</span></div>
       <div class="estimate-row"><span>Date &amp; time</span><span>${state.date || '—'} · ${state.time}</span></div>
       <div class="estimate-row total"><span>Confirmation</span><span>Service details and pricing will be disclosed upon confirmation via WhatsApp</span></div>
@@ -1132,8 +1159,8 @@
       `- Property: ${state.propType}, ${state.propRooms} room(s), ${state.propSize || 'size not specified'} sq ft`,
       `- Location: ${state.address || 'not specified'}`,
       (state.lat && state.lng) ? `- Map: https://www.openstreetmap.org/?mlat=${state.lat}&mlon=${state.lng}#map=17/${state.lat}/${state.lng}` : null,
-      isMaintenanceService() ? `- Maintenance service: ${state.maintenanceService || 'not specified'}` : isHouseAssistanceService() ? `- House assistance: ${state.houseAssistanceService || 'not specified'}` : `- Supplies: ${state.supplies || 'not specified'}`, 
-      isCleaningService() ? `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}` : null,
+      isMaintenanceService() ? `- Maintenance service: ${state.maintenanceService || 'not specified'}` : isHouseAssistanceService() ? `- House assistance: ${state.houseAssistanceService || 'not specified'}` : state.service.id === 'sofa-upholstery' ? `- Requested services: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}` : `- Supplies: ${state.supplies || 'not specified'}`, 
+      isCleaningService() && state.service.id !== 'sofa-upholstery' ? `- Focus areas: ${state.focusAreas.length ? state.focusAreas.join(', ') : 'none'}` : null,
       state.notes ? `- Notes: ${state.notes}` : null,
       state.cleaningNotes ? `- Cleaning notes: ${state.cleaningNotes}` : null,
       `- Preferred date/time: ${state.date || 'not specified'}, ${state.time}`,
@@ -1170,6 +1197,7 @@
     if (!validateStep(true)) return;
     if (state.step < state.totalSteps) {
       let nextStep = state.step + 1;
+      if (nextStep === 3 && state.service && state.service.id === 'sofa-upholstery') nextStep = 4;
       if (nextStep === 4 && !isCleaningService()) nextStep = 5;
       showStep(nextStep);
     }
@@ -1177,6 +1205,7 @@
   backBtn.addEventListener('click', () => {
     if (state.step > 1) {
       let previousStep = state.step - 1;
+      if (previousStep === 3 && state.service && state.service.id === 'sofa-upholstery') previousStep = 2;
       if (previousStep === 4 && !isCleaningService()) previousStep = 3;
       showStep(previousStep);
     }
@@ -1190,6 +1219,7 @@
 
 </body>
 </html>
+
 
 
 
